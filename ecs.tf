@@ -73,7 +73,6 @@ resource "aws_ecs_task_definition" "sun-api" {
 
 EOF
 
-
   execution_role_arn = aws_iam_role.sun-api-task-execution-role.arn
 
   # These are the minimum values for Fargate containers.
@@ -91,8 +90,7 @@ EOF
 # The assume_role_policy field works with the following aws_iam_policy_document to allow
 # ECS tasks to assume this role we're creating.
 resource "aws_iam_role" "sun-api-task-execution-role" {
-  name = "sun-api-task-execution-role"
-
+  name               = "sun-api-task-execution-role"
   assume_role_policy = data.aws_iam_policy_document.ecs-task-assume-role.json
 }
 
