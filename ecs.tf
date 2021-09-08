@@ -1,5 +1,5 @@
 locals {
-  repository_url = "public.ecr.aws/jimmysawczuk/sun-api"
+  repository_url = "ghcr.io/jimmysawczuk/sun-api"
 }
 
 # We need a cluster in which to put our service.
