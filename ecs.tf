@@ -1,5 +1,5 @@
 locals {
-  repository_url = "jimmysawczuk/sun-api"
+  repository_url = "ghcr.io/jimmysawczuk/sun-api"
 }
 
 # We need a cluster in which to put our service.
@@ -8,26 +8,26 @@ resource "aws_ecs_cluster" "app" {
 }
 
 # An ECR repository is a private alternative to Docker Hub.
-resource "aws_ecr_repository" "sun-api" {
+resource "aws_ecr_repository" "sun_api" {
   name = "sun-api"
 }
 
 # Log groups hold logs from our app.
-resource "aws_cloudwatch_log_group" "sun-api" {
+resource "aws_cloudwatch_log_group" "sun_api" {
   name = "/ecs/sun-api"
 }
 
 # The main service.
-resource "aws_ecs_service" "sun-api" {
+resource "aws_ecs_service" "sun_api" {
   name            = "sun-api"
-  task_definition = aws_ecs_task_definition.sun-api.arn
+  task_definition = aws_ecs_task_definition.sun_api.arn
   cluster         = aws_ecs_cluster.app.id
   launch_type     = "FARGATE"
 
   desired_count = 1
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.sun-api.arn
+    target_group_arn = aws_lb_target_group.sun_api.arn
     container_name   = "sun-api"
     container_port   = "3000"
   }
@@ -36,8 +36,8 @@ resource "aws_ecs_service" "sun-api" {
     assign_public_ip = false
 
     security_groups = [
-      aws_security_group.egress-all.id,
-      aws_security_group.api-ingress.id,
+      aws_security_group.egress_all.id,
+      aws_security_group.ingress_api.id,
     ]
 
     subnets = [
@@ -47,14 +47,14 @@ resource "aws_ecs_service" "sun-api" {
 }
 
 # The task definition for our app.
-resource "aws_ecs_task_definition" "sun-api" {
+resource "aws_ecs_task_definition" "sun_api" {
   family = "sun-api"
 
   container_definitions = <<EOF
   [
     {
       "name": "sun-api",
-      "image": "${local.repository_url == "" ? aws_ecr_repository.sun-api.repository_url : local.repository_url}:latest",
+      "image": "${local.repository_url == "" ? aws_ecr_repository.sun_api.repository_url : local.repository_url}:latest",
       "portMappings": [
         {
           "containerPort": 3000
@@ -73,7 +73,7 @@ resource "aws_ecs_task_definition" "sun-api" {
 
 EOF
 
-  execution_role_arn = aws_iam_role.sun-api-task-execution-role.arn
+  execution_role_arn = aws_iam_role.sun_api_task_execution_role.arn
 
   # These are the minimum values for Fargate containers.
   cpu                      = 256
@@ -89,12 +89,12 @@ EOF
 
 # The assume_role_policy field works with the following aws_iam_policy_document to allow
 # ECS tasks to assume this role we're creating.
-resource "aws_iam_role" "sun-api-task-execution-role" {
+resource "aws_iam_role" "sun_api_task_execution_role" {
   name               = "sun-api-task-execution-role"
-  assume_role_policy = data.aws_iam_policy_document.ecs-task-assume-role.json
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
 }
 
-data "aws_iam_policy_document" "ecs-task-assume-role" {
+data "aws_iam_policy_document" "ecs_task_assume_role" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -107,32 +107,32 @@ data "aws_iam_policy_document" "ecs-task-assume-role" {
 
 # Normally we'd prefer not to hardcode an ARN in our Terraform, but since this is an AWS-managed
 # policy, it's okay.
-data "aws_iam_policy" "ecs-task-execution-role" {
+data "aws_iam_policy" "ecs_task_execution_role" {
   arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
 # Attach the above policy to the execution role.
-resource "aws_iam_role_policy_attachment" "ecs-task-execution-role" {
-  role       = aws_iam_role.sun-api-task-execution-role.name
-  policy_arn = data.aws_iam_policy.ecs-task-execution-role.arn
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_role" {
+  role       = aws_iam_role.sun_api_task_execution_role.name
+  policy_arn = data.aws_iam_policy.ecs_task_execution_role.arn
 }
 
-resource "aws_lb_target_group" "sun-api" {
+resource "aws_lb_target_group" "sun_api" {
   name        = "sun-api"
   port        = 3000
   protocol    = "HTTP"
   target_type = "ip"
-  vpc_id      = aws_vpc.app-vpc.id
+  vpc_id      = aws_vpc.app_vpc.id
 
   health_check {
     enabled = true
     path    = "/health"
   }
 
-  depends_on = [aws_alb.sun-api]
+  depends_on = [aws_alb.sun_api]
 }
 
-resource "aws_alb" "sun-api" {
+resource "aws_alb" "sun_api" {
   name               = "sun-api-lb"
   internal           = false
   load_balancer_type = "application"
@@ -145,14 +145,14 @@ resource "aws_alb" "sun-api" {
   security_groups = [
     aws_security_group.http.id,
     aws_security_group.https.id,
-    aws_security_group.egress-all.id,
+    aws_security_group.egress_all.id,
   ]
 
   depends_on = [aws_internet_gateway.igw]
 }
 
-resource "aws_alb_listener" "sun-api-http" {
-  load_balancer_arn = aws_alb.sun-api.arn
+resource "aws_alb_listener" "sun_api_http" {
+  load_balancer_arn = aws_alb.sun_api.arn
   port              = "80"
   protocol          = "HTTP"
 
@@ -167,27 +167,27 @@ resource "aws_alb_listener" "sun-api-http" {
   }
 }
 
-resource "aws_alb_listener" "sun-api-https" {
-  load_balancer_arn = aws_alb.sun-api.arn
+resource "aws_alb_listener" "sun_api_https" {
+  load_balancer_arn = aws_alb.sun_api.arn
   port              = "443"
   protocol          = "HTTPS"
-  certificate_arn   = aws_acm_certificate.sun-api.arn
+  certificate_arn   = aws_acm_certificate.sun_api.arn
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.sun-api.arn
+    target_group_arn = aws_lb_target_group.sun_api.arn
   }
 }
 
 output "alb_url" {
-  value = "http://${aws_alb.sun-api.dns_name}"
+  value = "http://${aws_alb.sun_api.dns_name}"
 }
 
-resource "aws_acm_certificate" "sun-api" {
+resource "aws_acm_certificate" "sun_api" {
   domain_name       = "sun-api.jimmysawczuk.net"
   validation_method = "DNS"
 }
 
 output "domain_validations" {
-  value = aws_acm_certificate.sun-api.domain_validation_options
+  value = aws_acm_certificate.sun_api.domain_validation_options
 }

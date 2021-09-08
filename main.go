@@ -25,23 +25,23 @@ func main() {
 	http.ListenAndServe(":3000", mux)
 }
 
-func health(w http.ResponseWriter, r *http.Request) {
+func health(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok " + time.Now().Format(time.RFC3339)))
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	var lat = r.URL.Query().Get("lat")
+	lat := r.URL.Query().Get("lat")
 	if lat == "" {
 		lat = "41.495833"
 	}
 
-	var lng = r.URL.Query().Get("lng")
+	lng := r.URL.Query().Get("lng")
 	if lng == "" {
 		lng = "-81.685278"
 	}
 
-	var date, _ = time.Parse(time.RFC3339, r.URL.Query().Get("date"))
+	date, _ := time.Parse(time.RFC3339, r.URL.Query().Get("date"))
 	if date.IsZero() {
 		date = time.Now()
 	}

@@ -1,0 +1,20 @@
+name: Release new version
+on:
+  - push
+jobs:
+  build_image:
+    name: Build image
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build sun-api Docker image
+        run: |
+          docker build \
+            -t ghcr.io/jimmysawczuk/sun-api:latest .
+      - name: Push sun-api Docker image
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          echo $GH_PAT | docker login ghcr.io -u jimmysawczuk --password-stdin
+          docker push ghcr.io/jimmysawczuk/sun-api:latest

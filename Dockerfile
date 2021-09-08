@@ -1,9 +1,11 @@
-FROM golang:1.12 AS builder
+FROM golang:1.17 AS builder
 WORKDIR /app
 COPY main.go go.mod go.sum ./
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o app .
 
 FROM alpine:latest
+LABEL org.opencontainers.image.source=https://github.com/jimmysawczuk/terraform-fargate-tutorial
+LABEL maintainer="me@jimmysawczuk.com"
 
 RUN apk update \
 	&& apk add ca-certificates tzdata \

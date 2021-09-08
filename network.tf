@@ -1,23 +1,25 @@
-resource "aws_vpc" "app-vpc" {
+resource "aws_vpc" "app_vpc" {
   cidr_block = "10.0.0.0/16"
 }
 
 resource "aws_subnet" "public" {
-  vpc_id     = aws_vpc.app-vpc.id
-  cidr_block = "10.0.1.0/24"
+  vpc_id            = aws_vpc.app_vpc.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "us-east-1d"
 }
 
 resource "aws_subnet" "private" {
-  vpc_id     = aws_vpc.app-vpc.id
-  cidr_block = "10.0.2.0/24"
+  vpc_id            = aws_vpc.app_vpc.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "us-east-1e"
 }
 
 resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.app-vpc.id
+  vpc_id = aws_vpc.app_vpc.id
 }
 
 resource "aws_route_table" "private" {
-  vpc_id = aws_vpc.app-vpc.id
+  vpc_id = aws_vpc.app_vpc.id
 }
 
 resource "aws_route_table_association" "public_subnet" {
@@ -35,7 +37,7 @@ resource "aws_eip" "nat" {
 }
 
 resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.app-vpc.id
+  vpc_id = aws_vpc.app_vpc.id
 }
 
 resource "aws_nat_gateway" "ngw" {
@@ -60,7 +62,7 @@ resource "aws_route" "private_ngw" {
 resource "aws_security_group" "http" {
   name        = "http"
   description = "HTTP traffic"
-  vpc_id      = aws_vpc.app-vpc.id
+  vpc_id      = aws_vpc.app_vpc.id
 
   ingress {
     from_port   = 80
@@ -73,7 +75,7 @@ resource "aws_security_group" "http" {
 resource "aws_security_group" "https" {
   name        = "https"
   description = "HTTPS traffic"
-  vpc_id      = aws_vpc.app-vpc.id
+  vpc_id      = aws_vpc.app_vpc.id
 
   ingress {
     from_port   = 443
@@ -83,10 +85,10 @@ resource "aws_security_group" "https" {
   }
 }
 
-resource "aws_security_group" "egress-all" {
-  name        = "egress_all"
+resource "aws_security_group" "egress_all" {
+  name        = "egress-all"
   description = "Allow all outbound traffic"
-  vpc_id      = aws_vpc.app-vpc.id
+  vpc_id      = aws_vpc.app_vpc.id
 
   egress {
     from_port   = 0
@@ -96,10 +98,10 @@ resource "aws_security_group" "egress-all" {
   }
 }
 
-resource "aws_security_group" "api-ingress" {
-  name        = "api_ingress"
+resource "aws_security_group" "ingress_api" {
+  name        = "ingress-api"
   description = "Allow ingress to API"
-  vpc_id      = aws_vpc.app-vpc.id
+  vpc_id      = aws_vpc.app_vpc.id
 
   ingress {
     from_port   = 3000
@@ -110,7 +112,7 @@ resource "aws_security_group" "api-ingress" {
 }
 
 output "vpc_id" {
-  value = aws_vpc.app-vpc.id
+  value = aws_vpc.app_vpc.id
 }
 
 output "public_subnet_id" {
