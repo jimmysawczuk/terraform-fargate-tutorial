@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -55,10 +56,20 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("sending request to", u)
 
-	resp, err := http.Get(u)
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Errorf("couldn't make http request: %w", err).Error()))
+		w.Write([]byte("couldn't make http request"))
+		return
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Errorf("http: do: %w", err).Error()))
 		return
 	}
 
