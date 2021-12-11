@@ -6,24 +6,40 @@ resource "aws_subnet" "public_d" {
   vpc_id            = aws_vpc.app_vpc.id
   cidr_block        = "10.0.1.0/25"
   availability_zone = "us-east-1d"
+
+  tags = {
+    "Name" = "public | us-east-1d"
+  }
 }
 
 resource "aws_subnet" "private_d" {
   vpc_id            = aws_vpc.app_vpc.id
   cidr_block        = "10.0.2.0/25"
   availability_zone = "us-east-1d"
+
+  tags = {
+    "Name" = "private | us-east-1d"
+  }
 }
 
 resource "aws_subnet" "public_e" {
   vpc_id            = aws_vpc.app_vpc.id
   cidr_block        = "10.0.1.128/25"
   availability_zone = "us-east-1e"
+
+  tags = {
+    "Name" = "public | us-east-1e"
+  }
 }
 
 resource "aws_subnet" "private_e" {
   vpc_id            = aws_vpc.app_vpc.id
   cidr_block        = "10.0.2.128/25"
   availability_zone = "us-east-1e"
+
+  tags = {
+    "Name" = "private | us-east-1e"
+  }
 }
 
 resource "aws_route_table" "public" {
@@ -81,11 +97,11 @@ resource "aws_route" "public_igw" {
   gateway_id             = aws_internet_gateway.igw.id
 }
 
-# resource "aws_route" "private_ngw" {
-#   route_table_id         = aws_route_table.private.id
-#   destination_cidr_block = "0.0.0.0/0"
-#   nat_gateway_id         = aws_nat_gateway.ngw.id
-# }
+resource "aws_route" "private_ngw" {
+  route_table_id         = aws_route_table.private.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.ngw.id
+}
 
 resource "aws_security_group" "http" {
   name        = "http"
