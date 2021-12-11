@@ -2,33 +2,61 @@ resource "aws_vpc" "app_vpc" {
   cidr_block = "10.0.0.0/16"
 }
 
-resource "aws_subnet" "public" {
+resource "aws_subnet" "public_d" {
   vpc_id            = aws_vpc.app_vpc.id
-  cidr_block        = "10.0.1.0/24"
+  cidr_block        = "10.0.1.0/25"
   availability_zone = "us-east-1d"
 }
 
-resource "aws_subnet" "private" {
+resource "aws_subnet" "private_d" {
   vpc_id            = aws_vpc.app_vpc.id
-  cidr_block        = "10.0.2.0/24"
+  cidr_block        = "10.0.2.0/25"
+  availability_zone = "us-east-1d"
+}
+
+resource "aws_subnet" "public_e" {
+  vpc_id            = aws_vpc.app_vpc.id
+  cidr_block        = "10.0.1.128/25"
+  availability_zone = "us-east-1e"
+}
+
+resource "aws_subnet" "private_e" {
+  vpc_id            = aws_vpc.app_vpc.id
+  cidr_block        = "10.0.2.128/25"
   availability_zone = "us-east-1e"
 }
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.app_vpc.id
+  tags = {
+    "Name" = "public"
+  }
 }
 
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.app_vpc.id
+  tags = {
+    "Name" = "private"
+  }
 }
 
-resource "aws_route_table_association" "public_subnet" {
-  subnet_id      = aws_subnet.public.id
+resource "aws_route_table_association" "public_d_subnet" {
+  subnet_id      = aws_subnet.public_d.id
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_route_table_association" "private_subnet" {
-  subnet_id      = aws_subnet.private.id
+resource "aws_route_table_association" "private_d_subnet" {
+  subnet_id      = aws_subnet.private_d.id
+  route_table_id = aws_route_table.private.id
+}
+
+resource "aws_route_table_association" "public_e_subnet" {
+  subnet_id      = aws_subnet.public_e.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "private_e_subnet" {
+  subnet_id      = aws_subnet.private_e.id
   route_table_id = aws_route_table.private.id
 }
 
@@ -41,7 +69,7 @@ resource "aws_internet_gateway" "igw" {
 }
 
 resource "aws_nat_gateway" "ngw" {
-  subnet_id     = aws_subnet.public.id
+  subnet_id     = aws_subnet.public_d.id
   allocation_id = aws_eip.nat.id
 
   depends_on = [aws_internet_gateway.igw]
@@ -53,11 +81,11 @@ resource "aws_route" "public_igw" {
   gateway_id             = aws_internet_gateway.igw.id
 }
 
-resource "aws_route" "private_ngw" {
-  route_table_id         = aws_route_table.private.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.ngw.id
-}
+# resource "aws_route" "private_ngw" {
+#   route_table_id         = aws_route_table.private.id
+#   destination_cidr_block = "0.0.0.0/0"
+#   nat_gateway_id         = aws_nat_gateway.ngw.id
+# }
 
 resource "aws_security_group" "http" {
   name        = "http"
@@ -115,10 +143,10 @@ output "vpc_id" {
   value = aws_vpc.app_vpc.id
 }
 
-output "public_subnet_id" {
-  value = aws_subnet.public.id
-}
+# output "public_subnet_id" {
+#   value = aws_subnet.public.id
+# }
 
-output "private_subnet_id" {
-  value = aws_subnet.private.id
-}
+# output "private_subnet_id" {
+#   value = aws_subnet.private.id
+# }

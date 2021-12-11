@@ -41,7 +41,8 @@ resource "aws_ecs_service" "sun_api" {
     ]
 
     subnets = [
-      aws_subnet.private.id,
+      aws_subnet.private_d.id,
+      aws_subnet.private_e.id,
     ]
   }
 }
@@ -138,8 +139,8 @@ resource "aws_alb" "sun_api" {
   load_balancer_type = "application"
 
   subnets = [
-    aws_subnet.public.id,
-    aws_subnet.private.id,
+    aws_subnet.public_d.id,
+    aws_subnet.public_e.id,
   ]
 
   security_groups = [
