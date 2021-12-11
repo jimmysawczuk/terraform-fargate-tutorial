@@ -58,7 +58,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	resp, err := http.Get(u)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("couldn't make http request"))
+		w.Write([]byte(fmt.Errorf("couldn't make http request: %w", err).Error()))
 		return
 	}
 
