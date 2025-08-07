@@ -1,6 +1,8 @@
 name: Release new version
 on:
-  - push
+  push:
+    branches:
+      - main
 jobs:
   build_image:
     name: Build image
